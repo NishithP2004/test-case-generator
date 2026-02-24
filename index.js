@@ -4,6 +4,7 @@ import "dotenv/config"
 
 const app = express()
 app.use(express.json())
+app.use(express.static("public"))
 
 const PORT = process.env.PORT || 3000
 
@@ -11,11 +12,11 @@ app.listen(PORT, () => {
     console.log(`Listening on port: ${PORT}`)
 })
 
-app.get("/", (req, res) => {
+/* app.get("/", (req, res) => {
     res.send({
         message: "Welcome to Test Case Generator!"
     })
-})
+}) */
 
 app.post("/generate", async (req, res) => {
     const { url, problem_statement } = req.body
@@ -27,10 +28,11 @@ app.post("/generate", async (req, res) => {
     }
 
     try {
-        const { test_cases } = await pipeline(url || problem_statement, (url)? "url": "problem_statement")
+        const { test_cases, solutions } = await pipeline(url || problem_statement, (url)? "url": "problem_statement")
 
         res.status(201).send({
             test_cases,
+            solutions,
             success: true
         })
     } catch (err) {

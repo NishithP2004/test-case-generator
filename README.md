@@ -36,14 +36,31 @@ An automated tool that fetches LeetCode problems, generates solutions (Brute For
    # Optional: Defaults to http://localhost:11434
    OLLAMA_HOST=http://localhost:11434
    
-   # Optional: Defaults to llama3:latest or your preferred model
-   OLLAMA_MODEL=llama3:latest 
+   # Optional: Defaults to "minimax-m2.5:cloud" or your preferred model
+   OLLAMA_MODEL=minimax-m2.5:cloud
    
    # Optional: Port for the server (defaults to 3000)
    PORT=3000
    ```
 
 ## Usage
+
+### Web Interface
+
+The application now includes a modern, user-friendly web interface for generating test cases.
+
+1.  **Start the Server**: Run `node index.js`.
+2.  **Open Browser**: Navigate to `http://localhost:3000`.
+3.  **Input Problem**:
+    *   **LeetCode URL**: Paste the URL of the LeetCode problem (e.g., `https://leetcode.com/problems/two-sum/`).
+    *   **Problem Text**: Paste the full problem description in text markdown format.
+4.  **Generate**: Click the **Generate Test Cases** button.
+5.  **View Results**:
+    *   **Test Cases**: View the generated test cases in prettified JSON format.
+    *   **Solutions**: Switch to the "Solutions" tab to see the generated Python code for both Brute Force and Optimal solutions.
+    *   **Copy**: Use the copy buttons to easily copy the test cases or solution code to your clipboard.
+
+### API Usage
 
 1. Start the server:
    ```bash

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Case Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- PrismJS theme -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="main-container">
+        <header class="header">
+            <div class="logo">
+                <i class="fa-solid fa-flask logo-icon"></i>
+                <h1>Test Case Generator</h1>
+            </div>
+            <p class="subtitle">Generate comprehensive test cases for your algorithmic problems.</p>
+        </header>
+
+        <div class="input-card">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="url">
+                    <i class="fa-solid fa-link"></i> LeetCode URL
+                </button>
+                <button class="tab-btn" data-tab="text">
+                    <i class="fa-solid fa-align-left"></i> Problem Text
+                </button>
+            </div>
+
+            <div class="input-area">
+                <div class="input-group active" id="url-input-group">
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-globe input-icon"></i>
+                        <input type="url" id="leetcode-url" placeholder="https://leetcode.com/problems/two-sum/">
+                    </div>
+                </div>
+
+                <div class="input-group" id="text-input-group">
+                    <div class="input-wrapper textarea-wrapper">
+                        <textarea id="problem-text" placeholder="Paste your problem description here..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button id="generate-btn" class="primary-btn">
+                    <span class="btn-text">Generate Test Cases</span>
+                    <i class="fa-solid fa-wand-magic-sparkles btn-icon"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="loading-indicator" class="hidden">
+            <div class="spinner"></div>
+            <p>Analyzing problem and generating test cases...</p>
+        </div>
+
+        <div id="result-area" class="result-card hidden">
+            <div class="result-tabs">
+                <button class="result-tab active" data-target="test-cases-content">Test Cases</button>
+                <button class="result-tab" data-target="solutions-content">Solutions</button>
+            </div>
+
+            <div id="test-cases-content" class="result-pane active">
+                <div class="result-header">
+                    <h3>Generated Test Cases <span id="test-case-count" class="badge"></span></h3>
+                    <button id="copy-btn" class="icon-btn" title="Copy to clipboard">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+                <div class="result-content">
+                    <pre><code id="json-output" class="language-json"></code></pre>
+                </div>
+            </div>
+
+            <div id="solutions-content" class="result-pane">
+                <div class="solution-block">
+                    <div class="result-header">
+                        <h3><i class="fa-solid fa-bolt"></i> Brute Force</h3>
+                        <button class="icon-btn copy-solution-btn" data-target="brute-force-code" title="Copy to clipboard">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                    <div class="result-content">
+                        <pre><code id="brute-force-code" class="language-python"></code></pre>
+                    </div>
+                </div>
+
+                <div class="solution-block">
+                    <div class="result-header">
+                        <h3><i class="fa-solid fa-star"></i> Optimal</h3>
+                        <button class="icon-btn copy-solution-btn" data-target="optimal-code" title="Copy to clipboard">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                    <div class="result-content">
+                        <pre><code id="optimal-code" class="language-python"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+</body>
+</html>

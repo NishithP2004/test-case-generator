@@ -40,8 +40,11 @@ async function pipeline(urlOrPs, type) {
 
     const codeStubs = testCases.code_stubs
 
-    const c1 = `${solutions.brute_force || ""}\n\n${codeStubs.brute_force}`
-    const c2 = `${solutions.optimal || ""}\n\n${codeStubs.optimal}`
+    /* const c1 = `${solutions.brute_force || ""}\n\n${codeStubs.brute_force}`
+    const c2 = `${solutions.optimal || ""}\n\n${codeStubs.optimal}` */
+
+    const c1 = codeStubs.brute_force
+    const c2 = codeStubs.optimal
 
     console.log(`[${new Date().toLocaleTimeString()}] Validating test cases...`)
     for (let i = 0; i < testCases.test_cases.length; i++) {
@@ -92,11 +95,10 @@ async function pipeline(urlOrPs, type) {
     await fs.writeFile("io/output.json", JSON.stringify(valid, null, 2))
 
     return {
-        /* problem,
         solutions: {
-            brute_force: codeStubs.brute_force,
-            optimal: codeStubs.optimal
-        }, */
+            brute_force: c1,
+            optimal: c2
+        },
         test_cases: valid
     }
 }

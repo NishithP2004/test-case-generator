@@ -12,7 +12,7 @@ rl.on("line", async line => {
     try {
         const url = line.trim()
         if (!url) return;
-        await pipeline(url)
+        await pipeline(url, "url")
     } catch (err) {
         console.error(`[${new Date().toLocaleTimeString()}] Error:`, err.message)
         if (err.stack) console.error(err.stack);
