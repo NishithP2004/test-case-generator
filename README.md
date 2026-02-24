@@ -9,6 +9,7 @@ An automated tool that fetches LeetCode problems, generates solutions (Brute For
 - **Test Case Generation**: Automatically creates a set of test cases, edge cases, and large inputs.
 - **Automated Verification**: Runs the generated solutions locally against the test cases and validates the outputs.
 - **Artifact Saving**: Saves the fetched problem, generated code, test cases, and validation results to the `io/` directory for inspection.
+- **API Support**: Provides a REST API to interact with the generator.
 
 ## Prerequisites
 
@@ -35,28 +36,65 @@ An automated tool that fetches LeetCode problems, generates solutions (Brute For
    # Optional: Defaults to http://localhost:11434
    OLLAMA_HOST=http://localhost:11434
    
-   # Optional: Defaults to minimax-m2.5:cloud or your preferred model
+   # Optional: Defaults to llama3:latest or your preferred model
    OLLAMA_MODEL=llama3:latest 
+   
+   # Optional: Port for the server (defaults to 3000)
+   PORT=3000
    ```
 
 ## Usage
 
-1. Start the application:
+1. Start the server:
    ```bash
    node index.js
    ```
+   The server will start on `http://localhost:3000` (or your configured PORT).
 
-2. Enter a LeetCode problem URL when prompted:
+2. Generate Test Cases via API:
+
+   **Endpoint:** `POST /generate`
+
+   **Body:**
+   ```json
+   {
+       "url": "https://leetcode.com/problems/two-sum/",
+       "problem_statement": "Or provide the full text/markdown of the problem here"
+   }
    ```
-   :> https://leetcode.com/problems/two-sum/description
+   *Note: Provide either `url` OR `problem_statement`, not both.*
+
+   **Response:**
+   ```json
+   {
+       "test_cases": [ ... ],
+       "success": true
+   }
    ```
 
-3. The tool will perform the following steps:
-   - Fetch the problem content.
-   - Generate efficient and brute-force Python solutions.
-   - Generate a suite of test cases.
-   - Run the code and compare the outputs.
-   - Results will be logged to the console and saved in the `io/` folder.
+## Docker
+
+You can also run the application using Docker.
+
+1. Build the image:
+   ```bash
+   docker build -t test-case-generator .
+   ```
+
+2. Run the container:
+   ```bash
+   docker run -p 3000:3000 test-case-generator
+   ```
+
+3. Interact with the API as described in the Usage section above.
+
+The application will:
+- Fetch the problem content.
+- Generate efficient and brute-force Python solutions.
+- Generate a suite of test cases.
+- Run the code and compare the outputs.
+- Results will be logged to the server console and returned in the API response.
+- Artifacts (problem, code, test cases) are also saved in the `io/` folder inside the container.
 
 ## Output Structure
 
@@ -68,8 +106,9 @@ The `io/` directory will contain the generated artifacts:
 
 ## Architecture
 
-- **`index.js`**: Main CLI entry point that orchestrates the flow.
-- **`utils.js`**: Handles interactions with Ollama and Puppeteer for fetching/generation.
+- **`index.js`**: Express server entry point that handles API requests.
+- **`pipeline.js`**: Orchestrates the core logic: fetching, generating, and validating.
+- **`utils.js`**: Helper functions for Ollama interaction, Puppeteer scraping, and file operations.
 - **`compiler.js`**: Manages the execution of generated Python code using `child_process`.
 - **`prompts/`**: Contains the system prompts used to guide the LLM.
 
