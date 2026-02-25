@@ -85,6 +85,10 @@ The application now includes a modern, user-friendly web interface for generatin
    ```json
    {
        "test_cases": [ ... ],
+       "solutions": {
+         "brute_force": "<Python Code>",
+         "optimal": "<Python Code>"
+       }
        "success": true
    }
    ```

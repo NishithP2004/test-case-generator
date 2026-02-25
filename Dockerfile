@@ -1,21 +1,28 @@
-FROM node:24-alpine
+FROM node:24-bookworm-slim
 
-RUN apk update && \
-    apk add --no-cache chromium && \
-    apk add --no-cache python3 py3-pip
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    chromium \
+    python3 \
+    python3-pip \
+    curl \
+    zstd \
+    ca-certificates \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN ln -sf python3 /usr/bin/python && ln -sf pip3 /usr/bin/pip
+RUN ln -sf /usr/bin/python3 /usr/bin/python && ln -sf /usr/bin/pip3 /usr/bin/pip
 
 RUN curl -fsSL https://ollama.com/install.sh | sh
 
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
+    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true 
 
 WORKDIR /app
 
-COPY package*.json .
-RUN npm ci 
+COPY package*.json ./
+RUN npm ci --only=production
+
 COPY . .
 
 EXPOSE 3000
 
-CMD sh -c 'ollama serve >/dev/null 2>&1 & sleep 10 && node index.js'
+CMD ["/bin/sh", "-c", "ollama serve > /dev/null 2>&1 & (until curl -s http://127.0.0.1:11434 > /dev/null; do sleep 1; done) && node index.js"]
