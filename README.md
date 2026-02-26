@@ -34,7 +34,7 @@ An automated tool that fetches LeetCode problems, generates solutions (Brute For
    Create a `.env` file in the root directory:
    ```env
    # Optional: Defaults to http://localhost:11434
-   OLLAMA_HOST=http://localhost:11434
+   OLLAMA_HOST=https://ollama.com
    
    # Optional: Defaults to "minimax-m2.5:cloud" or your preferred model
    OLLAMA_MODEL=minimax-m2.5:cloud

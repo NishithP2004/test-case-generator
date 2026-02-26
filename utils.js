@@ -3,13 +3,16 @@ import fs from "node:fs/promises"
 import puppeteer from "puppeteer"
 
 const ollama = new Ollama({
-    host: process.env.OLLAMA_HOST || "http://localhost:11434"
+    host: process.env.OLLAMA_HOST || "http://localhost:11434",
+    headers: {
+        Authorization: "Bearer " + process.env.OLLAMA_API_KEY
+    }
 })
 
 const model = process.env.OLLAMA_MODEL || "minimax-m2.5:cloud"
-await ollama.pull({
+/* await ollama.pull({
     model
-})
+}) */
 
 const cp_expert_prompt = await fs.readFile("prompts/coding_expert.txt", "utf-8")
 const test_case_generator_prompt = await fs.readFile("prompts/test_case_generator.txt", "utf-8")
