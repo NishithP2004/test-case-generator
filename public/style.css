@@ -299,6 +299,12 @@ textarea {
     overflow-y: auto;
 }
 
+.result-content pre {
+    margin: 0;
+    white-space: pre;
+}
+
+
 pre {
     margin: 0 !important;
     padding: 1.5rem !important;

@@ -1,5 +1,6 @@
 import express from "express"
-import { pipeline } from "./pipeline.js"
+import { taskQueue } from "./queue/taskQueue.js"
+import "./jobs/taskWorker.js"
 import "dotenv/config"
 
 const app = express()
@@ -27,20 +28,41 @@ app.post("/generate", async (req, res) => {
         })
     }
 
-    try {
-        const { test_cases, solutions } = await pipeline(url || problem_statement, (url)? "url": "problem_statement")
+    const job = await taskQueue.add("generateTestCases", { url, problem_statement })
 
-        res.status(201).send({
-            test_cases,
-            solutions,
-            success: true
-        })
-    } catch (err) {
-        console.error(`[${new Date().toLocaleTimeString()}] Error:`, err.message)
-        if (err.stack) console.error(err.stack);
-        res.status(500).send({
-            error: err.message,
-            success: false
+    res.status(202).send({
+        message: "Job accepted",
+        jobId: job.id
+    })
+})
+
+app.get("/jobs/:id", async (req, res) => {
+    const id = req.params.id;
+
+    if (!id) {
+        return res.status(400).send({
+            success: false,
+            error: "A Job Id must be provided"
         })
     }
+
+    const job = await taskQueue.getJob(id)
+
+    if (!job) {
+        return res.status(404).send({
+            success: false,
+            error: "Job not found"
+        })
+    }
+
+    const status = await job.getState()
+    const result = job.returnvalue
+    const failedReason = job.failedReason
+
+    return res.send({
+        jobId: id,
+        status,
+        result,
+        failedReason
+    })
 })

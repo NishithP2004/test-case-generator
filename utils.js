@@ -105,7 +105,7 @@ async function fetchProblemFromLeetcode(url) {
 
         await page.goto(url, {
             waitUntil: "domcontentloaded",
-            timeout: 60000 
+            timeout: 60_000 
         });
 
         let content = await page.$eval("meta[name='description']", e => e.content).catch(() => "");

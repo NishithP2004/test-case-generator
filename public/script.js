@@ -95,18 +95,85 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to generate test cases');
+                throw new Error(data.error || 'Failed to submit job');
             }
 
-            // Success
-            displayResult(data);
+            // Start polling for results
+            pollJob(data.jobId);
+
         } catch (error) {
-            console.error('Error:', error);
-            alert(error.message);
-        } finally {
             setLoading(false);
+            alert(error.message);
         }
     });
+
+    async function pollJob(jobId) {
+        const pollInterval = 2000; // 2 seconds
+
+        try {
+            const response = await fetch(`/jobs/${jobId}`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                 throw new Error(data.error || 'Failed to check job status');
+            }
+
+            if (data.status === 'completed') {
+                renderResults(data.result);
+                setLoading(false);
+            } else if (data.status === 'failed') {
+                throw new Error(data.failedReason || 'Job failed processing');
+            } else {
+                // Job is still processing or queued
+                const statusText = document.querySelector('#loading-indicator p');
+                if (statusText) statusText.textContent = `Job status: ${data.status}...`;
+                
+                setTimeout(() => pollJob(jobId), pollInterval);
+            }
+        } catch (error) {
+            setLoading(false);
+            alert(`Error: ${error.message}`);
+        }
+    }
+
+    function renderResults(data) {
+        // Display Test Cases
+        if (data.test_cases) {
+            jsonOutput.textContent = JSON.stringify(data.test_cases, null, 4);
+            // Update badge count
+            const count = Array.isArray(data.test_cases) ? data.test_cases.length : 0;
+            const badge = document.getElementById('test-case-count');
+            if(badge) badge.innerText = count; 
+            
+            // Highlight code
+            if (window.Prism) {
+                Prism.highlightElement(jsonOutput);
+            }
+        }
+        
+        // Display Solutions
+        if (data.solutions) {
+             const bruteCode = document.getElementById('brute-force-code');
+             const optimalCode = document.getElementById('optimal-code');
+             
+             if(bruteCode) {
+                 bruteCode.textContent = data.solutions.brute_force || "// No brute force solution generated";
+                 if (window.Prism) Prism.highlightElement(bruteCode);
+             }
+             
+             if(optimalCode) {
+                 optimalCode.textContent = data.solutions.optimal || "// No optimal solution generated";
+                 if (window.Prism) Prism.highlightElement(optimalCode);
+             }
+        }
+
+        resultArea.classList.remove('hidden');
+        
+        // Scroll to result
+        resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+
 
     // Suggestion: Handle result tab clicking logic here if needed (e.g. tracking analytics)
 
@@ -160,41 +227,6 @@ document.addEventListener('DOMContentLoaded', () => {
             generateBtn.classList.remove('loading');
             loadingIndicator.classList.add('hidden');
         }
-    }
-
-    function displayResult(data) {
-        resultArea.classList.remove('hidden');
-
-        // Extract test_cases array if present
-        const testCases = data.test_cases || data;
-        const solutions = data.solutions || {};
-
-        const count = Array.isArray(testCases) ? testCases.length : 0;
-        
-        // Update count badge
-        const countElement = document.getElementById('test-case-count');
-        if (countElement) {
-            countElement.textContent = `${count} Case${count !== 1 ? 's' : ''}`;
-        }
-
-        // Set JSON Content
-        const jsonString = JSON.stringify(testCases, null, 4);
-        jsonOutput.textContent = jsonString; // Use textContent to let Prism parse it
-
-        // Update Solutions Content
-        const bruteForceCode = document.getElementById('brute-force-code');
-        const optimalCode = document.getElementById('optimal-code');
-
-        if (bruteForceCode) bruteForceCode.textContent = solutions.brute_force || '# No brute force solution available';
-        if (optimalCode) optimalCode.textContent = solutions.optimal || '# No optimal solution available';
-        
-        // Trigger Prism Highlight
-        if (window.Prism) {
-            Prism.highlightAll();
-        }
-
-        // Scroll to result
-        resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     // Deprecated manual highlight function

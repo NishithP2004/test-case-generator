@@ -8,14 +8,17 @@ An automated tool that fetches LeetCode problems, generates solutions (Brute For
 - **Solution Generation**: Uses an LLM (via Ollama) to generate Python code for both Brute Force and Optimal solutions.
 - **Test Case Generation**: Automatically creates a set of test cases, edge cases, and large inputs.
 - **Automated Verification**: Runs the generated solutions locally against the test cases and validates the outputs.
+- **Asynchronous Processing**: Uses BullMQ and Redis for robust background job processing.
 - **Artifact Saving**: Saves the fetched problem, generated code, test cases, and validation results to the `io/` directory for inspection.
 - **API Support**: Provides a REST API to interact with the generator.
+- **Web Interface**: A modern, user-friendly web interface for easy interaction.
 
 ## Prerequisites
 
 - **Node.js**: Ensure Node.js is installed.
 - **Python**: Required to execute the generated solution code.
 - **Ollama**: You need [Ollama](https://ollama.com/) running locally or accessible via a URL.
+- **Redis**: Required for the job queue system.
 
 ## Installation
 
@@ -33,21 +36,27 @@ An automated tool that fetches LeetCode problems, generates solutions (Brute For
 3. Configure Environment Variables:
    Create a `.env` file in the root directory:
    ```env
+   # Server Port (Optional, defaults to 3000)
+   PORT=3000
+   
+   # Ollama Configuration
    # Optional: Defaults to http://localhost:11434
    OLLAMA_HOST=https://ollama.com
-   
    # Optional: Defaults to "minimax-m2.5:cloud" or your preferred model
    OLLAMA_MODEL=minimax-m2.5:cloud
-   
-   # Optional: Port for the server (defaults to 3000)
-   PORT=3000
+   # Required if your Ollama instance needs authentication
+   OLLAMA_API_KEY=your_api_key_here
+
+   # Redis Configuration (Required)
+   REDIS_HOST=127.0.0.1
+   REDIS_PORT=6379
+   REDIS_USERNAME=default
+   REDIS_PASSWORD=your_redis_password
    ```
 
 ## Usage
 
 ### Web Interface
-
-The application now includes a modern, user-friendly web interface for generating test cases.
 
 1.  **Start the Server**: Run `node index.js`.
 2.  **Open Browser**: Navigate to `http://localhost:3000`.
@@ -68,7 +77,7 @@ The application now includes a modern, user-friendly web interface for generatin
    ```
    The server will start on `http://localhost:3000` (or your configured PORT).
 
-2. Generate Test Cases via API:
+2. **Submit a Job**:
 
    **Endpoint:** `POST /generate`
 
@@ -84,12 +93,28 @@ The application now includes a modern, user-friendly web interface for generatin
    **Response:**
    ```json
    {
-       "test_cases": [ ... ],
-       "solutions": {
-         "brute_force": "<Python Code>",
-         "optimal": "<Python Code>"
-       }
-       "success": true
+       "message": "Job accepted",
+       "jobId": "1"
+   }
+   ```
+
+3. **Check Job Status**:
+
+   **Endpoint:** `GET /jobs/:id`
+
+   **Response (Complete):**
+   ```json
+   {
+       "jobId": "1",
+       "status": "completed",
+       "result": {
+           "test_cases": [ ... ],
+           "solutions": {
+               "brute_force": "<Python Code>",
+               "optimal": "<Python Code>"
+           }
+       },
+       "failedReason": null
    }
    ```
 
@@ -104,7 +129,7 @@ You can also run the application using Docker.
 
 2. Run the container:
    ```bash
-   docker run -p 3000:3000 test-case-generator
+   docker run -p 3000:3000 --env-file .env test-case-generator
    ```
 
 3. Interact with the API as described in the Usage section above.
@@ -131,6 +156,8 @@ The `io/` directory will contain the generated artifacts:
 - **`pipeline.js`**: Orchestrates the core logic: fetching, generating, and validating.
 - **`utils.js`**: Helper functions for Ollama interaction, Puppeteer scraping, and file operations.
 - **`compiler.js`**: Manages the execution of generated Python code using `child_process`.
+- **`queue/`**: Contains Redis connection and BullMQ queue setup.
+- **`jobs/`**: Contains the worker logic processing the generation tasks.
 - **`prompts/`**: Contains the system prompts used to guide the LLM.
 
 ## License

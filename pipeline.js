@@ -3,7 +3,7 @@ import { runCode } from "./compiler.js"
 import { generateSolutions, generateTestCases, fetchProblemFromLeetcode } from "./utils.js"
 import "dotenv/config"
 
-async function pipeline(urlOrPs, type) {
+async function pipeline(urlOrPs, type, saveOutput = true) {
     try {
         await fs.mkdir("io", { recursive: true });
     } catch (err) {
@@ -15,22 +15,22 @@ async function pipeline(urlOrPs, type) {
     if (type === "url") {
         console.log(`\n[${new Date().toLocaleTimeString()}] Fetching problem from LeetCode...`)
         problem = await fetchProblemFromLeetcode(urlOrPs)
-    } else if(type === "problem_statement") {
+    } else if (type === "problem_statement") {
         problem = urlOrPs
     }
 
     console.log(`[${new Date().toLocaleTimeString()}] Problem fetched successfully. Length: ${problem.length} chars.`)
-    await fs.writeFile("io/problem.txt", problem)
+    if (saveOutput) await fs.writeFile("io/problem.txt", problem)
 
     console.log(`[${new Date().toLocaleTimeString()}] Generating Solutions for the fetched Problem...`)
     const solutions = await generateSolutions(problem);
     console.log(`[${new Date().toLocaleTimeString()}] Solutions generated.`)
-    await fs.writeFile("io/solutions.json", JSON.stringify(solutions, null, 2))
+    if (saveOutput) await fs.writeFile("io/solutions.json", JSON.stringify(solutions, null, 2))
 
     console.log(`[${new Date().toLocaleTimeString()}] Generating Test Cases for the given Problem...`)
     const testCases = await generateTestCases(problem, solutions)
     console.log(`[${new Date().toLocaleTimeString()}] Test cases generated. Count: ${testCases?.test_cases?.length || 0}`)
-    await fs.writeFile("io/test_cases.json", JSON.stringify(testCases, null, 2))
+    if (saveOutput) await fs.writeFile("io/test_cases.json", JSON.stringify(testCases, null, 2))
 
     const valid = []
 
@@ -80,9 +80,13 @@ async function pipeline(urlOrPs, type) {
                 return false;
             };
 
-            if (isMatch(output2, expected)) {
+            if (isMatch(output2, expected) || isMatch(output2, output1)) {
                 process.stdout.write("PASSED\n");
-                valid.push(testCase)
+                // Handles cases where outputs are equal but excluded because they don’t align with the AI’s inferred values.
+                valid.push({
+                    input: testCase.input,
+                    output: output2 // Prioritizes the optimal output over the AI generated output
+                })
             } else {
                 process.stdout.write(`FAILED (Expected: ${expected}, Got: BF=${output1}, OPT=${output2})\n`);
             }
@@ -92,7 +96,7 @@ async function pipeline(urlOrPs, type) {
     }
 
     console.log(`[${new Date().toLocaleTimeString()}] Validation complete. ${valid.length}/${testCases.test_cases.length} valid test cases found.`)
-    await fs.writeFile("io/output.json", JSON.stringify(valid, null, 2))
+    if (saveOutput) await fs.writeFile("io/output.json", JSON.stringify(valid, null, 2))
 
     return {
         solutions: {
